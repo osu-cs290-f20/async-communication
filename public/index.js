@@ -21,13 +21,32 @@ function handleModalAcceptClick() {
     alert("You must fill in all of the fields!");
   } else {
 
-    var photoCardTemplate = Handlebars.templates.photoCard;
-    var newPhotoCardHTML = photoCardTemplate({
+    var postRequest = new XMLHttpRequest();
+    var reqURL = '/people/' + getPersonIdFromURL() + "/addPhoto";
+    postRequest.open('POST', reqURL);
+
+    var reqBody = JSON.stringify({
       url: photoURL,
       caption: caption
     });
-    var photoCardContainer = document.querySelector('.photo-card-container');
-    photoCardContainer.insertAdjacentHTML('beforeend', newPhotoCardHTML);
+
+    postRequest.setRequestHeader('Content-Type', 'application/json');
+    postRequest.addEventListener('load', function (event) {
+      if (event.target.status === 200) {
+        var photoCardTemplate = Handlebars.templates.photoCard;
+        var newPhotoCardHTML = photoCardTemplate({
+          url: photoURL,
+          caption: caption
+        });
+        var photoCardContainer = document.querySelector('.photo-card-container');
+        photoCardContainer.insertAdjacentHTML('beforeend', newPhotoCardHTML);
+      } else {
+        alert("Error storing photo in database: " + event.target.response);
+      }
+    });
+    postRequest.send(reqBody);
+
+
 
     hideModal();
 

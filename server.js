@@ -1,3 +1,4 @@
+var fs = require('fs');
 var path = require('path');
 var express = require('express');
 var exphbs = require('express-handlebars');
@@ -39,6 +40,24 @@ app.post('/people/:person/addPhoto', function (req, res, next) {
     var person = req.params.person.toLowerCase();
     if (peopleData[person]) {
       // Add photo to DB...
+      peopleData[person].photos.push({
+        caption: req.body.caption,
+        url: req.body.url
+      });
+      console.log("== Data for", person, ":", peopleData[person]);
+
+      fs.writeFile(
+        __dirname + '/peopleData.json',
+        JSON.stringify(peopleData, null, 2),
+        function (err, data) {
+          if (err) {
+            console.log("  -- err:", err);
+            res.status(500).send("Error saving photo in DB");
+          } else {
+            res.status(200).send("Photo successfully added.")
+          }
+        }
+      );
     } else {
       next();
     }
